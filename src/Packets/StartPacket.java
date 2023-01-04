@@ -2,6 +2,7 @@ package Packets;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.zip.CRC32;
 
 public class StartPacket extends Packet {
     private static final byte[] StartSignal = "Start".getBytes();
@@ -20,9 +21,9 @@ public class StartPacket extends Packet {
             (
                 SessionNumberLength +
                 PaketNumberLength +
-                START_SIGNAL.length +
-                FILE_LENGTH_LENGTH +
-                FILENAME_LENGTH_LENGTH +
+                StartSignal.length +
+                FileLength_Length +
+                FilenameLength_Length +
                 fileName.length()
             )
         );*/
@@ -38,5 +39,30 @@ public class StartPacket extends Packet {
         byte PacketNumber = 0;
         ByteBufferNonPayload.put(PacketNumber);
 
+        ByteBufferNonPayload.put(StartSignal);
+
+        ByteBuffer ByteBufferPayload = ByteBuffer.allocate(
+                FileLength_Length +
+                        FilenameLength_Length +
+                        fileName.length()
+        );
+        ByteBufferPayload.putLong(fileLength);  //befullen
+        ByteBufferPayload.putShort((short) fileName.length());  //casten auf short da nur 2 bytes
+        ByteBufferPayload.put(fileName.getBytes());
+
+        this.byteBuffer = ByteBuffer.allocate(
+                ByteBufferNonPayload.capacity() +
+                        ByteBufferPayload.capacity() +
+                        Crc32Length
+        );
+
+        this.byteBuffer.put(ByteBufferNonPayload.array());
+        this.byteBuffer.put(ByteBufferPayload.array());
+
+        CRC32 crc32 = new CRC32();
+        crc32.update(ByteBufferPayload.array());    //crc soll nur aus payload bestehen
+
+        this.byteBuffer.putInt((int) crc32.getValue());
+    }
 
 }
