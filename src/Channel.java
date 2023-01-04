@@ -6,7 +6,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+//Abgabeverion
 public class Channel {
   private static double lossRate = 0.0;
   private static int averageDelay = 0; // milliseconds end-to-end

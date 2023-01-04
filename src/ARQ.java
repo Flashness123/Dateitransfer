@@ -1,3 +1,5 @@
+//Abgabeverion
+/**@Author Lukas**/
 public interface ARQ {
 
   /**

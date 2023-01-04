@@ -2,6 +2,7 @@ import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+//Abgabeverion
 
 public class CustomLoggingHandler extends Handler {
     public static final String ANSI_RED = "\u001B[31m";
