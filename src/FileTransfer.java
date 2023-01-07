@@ -36,7 +36,7 @@ public class FileTransfer implements FT {
         this.fileName = fileName;
 
         if ("gbn".equals(arq)) {
-            this.arq = new GBN(socket);//noch nicht implementioiert
+            this.arq = new GoBackN(socket);//noch nicht implementioiert
         } else {
             this.arq = new StopWaitProtocol(socket);
         }
