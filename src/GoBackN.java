@@ -1,3 +1,5 @@
+
+
 public class GoBackN implements ARQ {
     private final Socket socket;
 
