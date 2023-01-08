@@ -17,7 +17,7 @@ public class FileCopy {
   static int port;
   static int delay;
   static double loss;
-  static String dir = "upload/";
+  static String dir = "testfiles";
 
   public static void main(String[] args) throws IOException {
     Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
@@ -79,8 +79,11 @@ public class FileCopy {
     Socket socket = new Socket(port, loss, delay);
     FileTransfer myFT = new FileTransfer(socket, dir);
     do {
-      if (myFT.file_init() ) System.out.println("Server-AW: file received");
-      else System.out.println("Server-AW: file receive abort (time out)");
+      if (myFT.file_init()) {
+        System.out.println("Server-AW: file received");
+      } else {
+        System.out.println("Server-AW: file receive abort (time out)");
+      }
     } while (true);
   }
 }
