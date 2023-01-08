@@ -121,7 +121,7 @@ public class FileTransfer implements FT {
             int numberOfBytesReceived = 0;
 
             while (numberOfBytesReceived < fileLength) {
-                byte[] data = arq.data_ind_req();
+                byte[] data = arq.data_ind_req((int) (fileLength - numberOfBytesReceived));
                 bytesReceived.put(data);
                 numberOfBytesReceived += data.length;
             }

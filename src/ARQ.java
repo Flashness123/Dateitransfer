@@ -16,11 +16,11 @@ public interface ARQ {
 
   /**
    * Receiver/Server: Request to receive a data packet (first packet is start)
-   * @param values Optional data for the Sender/Client
+   * @param remaining Optional data for the Sender/Client
    * @return DataPacket without SW-Header
    * @throws TimeoutException Timeout of Socket
    */
-  byte[] data_ind_req(int... values) throws TimeoutException;
+  byte[] data_ind_req(int remaining) throws TimeoutException;
 
   /**
    *

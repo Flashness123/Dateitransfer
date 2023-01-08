@@ -40,12 +40,12 @@ public class StopWaitProtocol implements ARQ {
     }
 
     @Override
-    public byte[] data_ind_req(int... values) throws TimeoutException {
+    public byte[] data_ind_req(int remaining) throws TimeoutException {
         DatagramPacket datagramPacket = socket.receivePacket();
         byte[] data = datagramPacket.getData();
         AcknowledgePacket acknowledgePacket = new AcknowledgePacket(Arrays.copyOfRange(data, 0, 2), data[2], (byte) 1);
         socket.sendPacket(acknowledgePacket.toBytes());
-        return Arrays.copyOfRange(datagramPacket.getData(), 3, datagramPacket.getData().length);
+        return Arrays.copyOfRange(datagramPacket.getData(), 3, 3+Math.min(mtu, remaining) );
     }
 
     @Override

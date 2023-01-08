@@ -13,9 +13,10 @@ public class GoBackN implements ARQ {
     }
 
     @Override
-    public byte[] data_ind_req(int... values) throws TimeoutException {
+    public byte[] data_ind_req(int remaining) throws TimeoutException {
         return new byte[0];
     }
+
 
     @Override
     public int getBackData() {
