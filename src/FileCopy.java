@@ -17,7 +17,7 @@ public class FileCopy {
   static int port;
   static int delay;
   static double loss;
-  static String dir = "testfiles";
+  static String dir = "Testfiles";
 
   public static void main(String[] args) throws IOException {
     Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);

@@ -13,7 +13,7 @@ public class Channel {
   private static Random random;
   private static final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
   private DatagramSocket socket;
-  BlockingQueue queue = new ArrayBlockingQueue(256);
+  BlockingQueue<DatagramPacket> queue = new ArrayBlockingQueue<>(256);
   ChannelDelay ch =  new ChannelDelay();
 
   Channel(DatagramSocket socket, double loss, int delay)  {
