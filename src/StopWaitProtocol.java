@@ -21,11 +21,13 @@ public class StopWaitProtocol implements ARQ {
         byte[] sessionAndPacketNumber = Arrays.copyOfRange(hlData, 0, 3);
         int packetRetries = 0;
         boolean packetSentSuccessfully = false;
+        System.out.println("sending: " + Arrays.toString(hlData));
         do {
             try {
                 socket.sendPacket(hlData);
                 DatagramPacket ackPacket = socket.receivePacket();
                 byte[] ackPacketData = ackPacket.getData();
+                System.out.println("received: " + Arrays.toString(ackPacketData));
                 if (!Arrays.equals(sessionAndPacketNumber, Arrays.copyOfRange(ackPacketData, 0, 3))) {
                     return false;
                 }

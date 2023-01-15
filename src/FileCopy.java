@@ -60,6 +60,9 @@ public class FileCopy {
     }
   }
 
+
+
+
   private static void sendFile(String host, int port, String fileName, String arq)
       throws IOException {
     // establish socket - exception possible

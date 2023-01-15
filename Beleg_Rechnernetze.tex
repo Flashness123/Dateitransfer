@@ -1,0 +1,164 @@
+\documentclass [12pt]{article}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{color}
+\newcommand{\mycomment}[1]{}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\begin{document}
+\title{Rechnernetze Beleg}
+\maketitle
+\begin{center}
+Beleg von Lukas Kouba (s83783)
+\end{center}
+\title{Erklaerung der einzelnen Funktionen:}
+\maketitle
+\newline
+Erklarung nur von Funktionen welche von Flashness123 geschrieben wurden\newline
+Also nicht von ARQ, Channel, CustomLoggingHandler, FileCopy, FT
+\newline
+
+\title{Arten von Packets:}
+\maketitle
+\newline\newline
+AcknowledgePacket:\newline
+- dient als ack Paket\newline
+- wird von server an client geschickt\newline
+- besteht aus sessionNumber, packetNumber, gbnN(1, also anzahl wie viele Pakete zu senden sind(aufeinmal))\newline
+- ganz zum schluss wird crc32 in data verschickt, deshalb auch 2 Konstruktoren\newline\newline
+DataPacket:\newline
+- von Client an Server \newline
+- beinhalten Datenpakete bestehend aus bytes\newline
+- besteht aus sessionNumber, paketNumber, data\newline
+- in letztem DataPacket wird data mit der crc32 befullt\newline\newline
+StartPacket:\newline
+-von Client an Server\newline
+- beginnt mit "Start"\newline
+- besteht aus Sessionnummer, PacketNumber(beim Startpacket naturlich 0), "Start", fileLength(Lange der zu ubertragenden Datei),\newline
+ fileName(lange des Dateinamens an sich), fileName (eigentlicher Name der Datei)\newline
+- crc32 wird nur aus den letzten dreien gebildet\newline
+- crc wird 2mal gepruft, einmal nach dem startpaketm und einmal nachdem alle Dateien ubertragen wurden\newline\newline
+
+\title{Funktion von FileTransfer:}
+\maketitle
+\newline\newline
+- hat 2 Konstruktoren, einen fur Client und einen fur Server\newline
+- Client benotigt host, socket, fileName und arq(arq entscheidet ob sw oder gbn ausgefuhrt wird, bei mir nur sw implementiert)\newline
+- moglicher Aufruf: client localhost 42069 "4922B.sql" sw\newline
+- Server benotigt socket und dir, moglich auch loss und delay\newline
+- moglicher Aufruf: server 42069 0.1 100\newline
+
+\title{Funktion von file-init():}
+\maketitle
+\newline\newline
+- wird aufgerufen, nachdem der server gestartet wurde, wird also von handleConnection aufgerufen\newline
+- wartet auf das Startpacket und offnet es\newline
+- vergleicht ob "Start" zwischen 3 und 8er Position in Bytekette\newline
+- allocated den benotigten speicher wie in Bytekette angegeben + von getMTU()(Bug)\newline
+- extrahiert die sessionnumber aus den ersten 3 bit\newline
+- falls alles passt wird ein acknowledgePacket zuruckgeschickt\newline
+- nun wird data-ind-req solange aufgerufen solange nicht numberOfBytesReceived mit der angegebenen Dateilange ubereinstimmt, Ergebnisse in data gespeichert und dann an\newline bytesReceived weitergegeben\newline
+- in data-ind-req werden weiter \newline
+- danach wird erneut ein AcknowledgePacket gebildet und verschickt\newline
+- File wird gespeichert mit utf8 coding (name aus Startpacket geholt), dir als Pfad\newline
+- falls existent, wird 1 angehangt, (macht teilweise dateiendung kaputt)\newline
+\title{Funktion von file-req():}
+\maketitle
+\newline\newline
+- wird gestartet nachdem Client gestartet wird(von sendFile)\newline
+- generiert random sessionNumber\newline
+- erstellt neues StartPacket und gibt sessionNumber, fileName, filelange weiter\newline
+- StartPacket wird dann in packetData gespeichert und an data-req() weitergegeben\newline
+- data-req() verarbeitet das startpacket und gibt true zuruck\newline
+- je nach grosse der MTU ( bei uns wie bestpractice 1480) werden nun neue Daten geladen\newline
+- in schleife an data-req ubergeben, bis keine Daten mehr vorhanden\newline
+- packetNumber wird itteriert, damit der vergleich mit den acks klappt\newline
+- nun wird die crc32 gebildet und zum letzten packet verpackt\newline
+- dieses wird abgeschickt und lastTrasmission auf true gesetzt\newline\newline
+\title{Funktion von data-req():}
+\maketitle
+\newline\newline
+- zieht sich aus hlData welches das Startpaket am Anfang ist die Session und Packet number\newline
+- setzt packetRetries auf null\newline
+- geht in Schleife, in der es versucht hlData(mit DataPackets gefullt) zu versenden, ein ack Packet zu empfangen, aus diesem die Session und Packet number zu lesen und mit den eigenen Werten zu vergleichen\newline
+- bei Fehlversuch wird packetRetries bis 10 itteriert und dann abgebrochen\newline\newline
+\title{Funktion von data-ind-req():}
+\maketitle
+\newline\newline
+- funktion zum daten speichern und acks senden\newline
+- bekommt mit, wie viele bytes noch zu ubertragen sind\newline
+- empfangt ein packet und speichert dies in data\newline
+- bildet ackpacket und sendet es \newline
+- returned byte array von der grosse der MTU oder remaining\newline\newline
+
+\newpage
+
+\title{Lernportfolio:}
+\maketitle
+\newline\newline
+- Fortschritte auf Github zu sehen\newline\newline
+- Generelles vorgehen:
+\begin{enumerate}
+	\item Beleg als zip-Datei runterladen
+	\item Nur lokal auf rechner bearbeiten und coden (grosster Zeitanspruch)
+	\item Nachdem das geklappt hat, die Dateien nach und nach auf Github hochladen und nochmal genau durchgehen ob der code so ausfuhrbar ist
+	\item Verbesserungen nacharbeiten und Bugs die ubersehen wurden fixen 
+	\item Make-Datei schreiben und auf Linux System testen
+	\item Funktionen erklaren, teils mit bereits beim coden geschriebenen Kommentaren\newline
+\end{enumerate}
+
+
+\title{Verbesserungsvorschlage:}
+\maketitle
+\newline\newline
+Der Beleg war generell viel zu schwer und kaum nur mit der Erfahrung aus C++ machbar. Auch wenn man fruh genug anfangt, braucht man ewig dafur und das Debuggen macht nach den ersten Versuchen auch nur wenig Spass. An sich wurde das Ziel wahrscheinlich erreicht und zwar kann ich jetzt deutlich besser mit Java als Sprache umgehen und verstehe die Zusammenarbeit zwischen Client und Server deutlich besser. Das Problem bei dem Beleg ist, dass man so sehr ins kalte Wasser geworfen wird, dass selbst StackOverflow und diverse Videos einem nur wenig helfen. Ich musste oft andere nach Hilfe fragen oder mir von ihnen teilweise die Aufgabenstellung erklaren lassen. Ich denke ein etwas weniger intensiver Beleg wurde seinen Zweck besser erfullen. Generell fand ich es aber sehr gut, dass wir uns in ein teilweise geschriebenes Projekt einarbeiten mussten, mit LaTeX gearbeitet haben und ein neues Thema anhand einer neuen Sprache gelernt haben. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+\mycomment{
+\begin{lstlisting}
+// Hello.java
+import javax.swing.JApplet;
+import java.awt.Graphics;
+
+public class Hello extends JApplet {
+    public void paintComponent(Graphics g) {
+        g.drawString("Hello, world!", 65, 95);
+    }    
+}
+\end{lstlisting}
+}
+
+\end{document}

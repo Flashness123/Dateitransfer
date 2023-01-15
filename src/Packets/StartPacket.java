@@ -30,8 +30,7 @@ public class StartPacket extends Packet {
         //Aufpassen, buffer bestehend aus 2 ByteBuffern, mit und ohne payload
         ByteBuffer ByteBufferNonPayload = ByteBuffer.allocate(
                 SessionNumberLength +
-                        PaketNumberLength +
-                        StartSignal.length
+                        PaketNumberLength
         );
 
         ByteBufferNonPayload.put(sessionNumber);
@@ -39,13 +38,15 @@ public class StartPacket extends Packet {
         byte PacketNumber = 0;
         ByteBufferNonPayload.put(PacketNumber);
 
-        ByteBufferNonPayload.put(StartSignal);
+        //ByteBufferNonPayload.put(StartSignal);
 
         ByteBuffer ByteBufferPayload = ByteBuffer.allocate(
-                FileLength_Length +
+                StartSignal.length+
+                        FileLength_Length +
                         FilenameLength_Length +
                         fileName.length()
         );
+        ByteBufferPayload.put(StartSignal);
         ByteBufferPayload.putLong(fileLength);  //befullen
         ByteBufferPayload.putShort((short) fileName.length());  //casten auf short da nur 2 bytes
         ByteBufferPayload.put(fileName.getBytes());

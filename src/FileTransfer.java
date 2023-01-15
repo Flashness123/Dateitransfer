@@ -6,14 +6,15 @@ import Packets.AcknowledgePacket;
 import Packets.DataPacket;
 import Packets.StartPacket;
 
-
 import java.io.*;
 import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.zip.CRC32;
+
 
 public class FileTransfer implements FT {
     private final boolean isServer;
@@ -65,6 +66,7 @@ public class FileTransfer implements FT {
     @Override
     public boolean file_req() throws IOException {
         File file = new File(fileName);
+        this.fileName = Paths.get(fileName).getFileName().toString();
         try (InputStream inputStream = new FileInputStream(file)) {
             new Random().nextBytes(sessionNumber);
 
@@ -82,16 +84,29 @@ public class FileTransfer implements FT {
                 packetNumber++;
             }
 
-            CRC32 crc32 = new CRC32();
-            crc32.update(inputStream.readAllBytes());
 
-            DataPacket lastPacket = new DataPacket(
-                    sessionNumber,
-                    packetNumber,
-                    ByteBuffer.allocate(4).putInt((int) crc32.getValue()).array()
-            );
+            CRC32 crc32 = new CRC32();
+            try (InputStream inputStream1 = new FileInputStream(file)) {
+                crc32.update(inputStream1.readAllBytes());
+            }
+
+            byte[] calculatedCRC32 = ByteBuffer.allocate(4).putInt((int) crc32.getValue()).array();
+
+            DataPacket lastPacket = new DataPacket(sessionNumber, packetNumber, calculatedCRC32 );
             packetData = lastPacket.toBytes();
+
+            arq.data_req(packetData, packetData.length, true);
+            DatagramPacket receivedLastPacket = socket.receivePacket();
+
+            byte[] receivedCRC32 = Arrays.copyOfRange(receivedLastPacket.getData(), 4, 8);
+            if (!Arrays.equals(calculatedCRC32, receivedCRC32)) {
+                System.out.println("calculated crc: " + Arrays.toString(calculatedCRC32) + "\nreceived crc: " + Arrays.toString(receivedCRC32));
+                return false;
+            }
+
             return arq.data_req(packetData, packetData.length, true);
+        } catch (TimeoutException e) {
+            throw new RuntimeException(e);
         }
     }
 
